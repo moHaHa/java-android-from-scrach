@@ -2,10 +2,15 @@ package com.example.javaemptyactivity;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.example.javaemptyactivity.models.Agent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -65,5 +70,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // so: return true => success
         //     return false => failed
         return newRowId != -1;
+    }
+
+    /**
+     * Get List Of Agents
+     */
+
+    public List<Agent> getAgents() {
+        List<Agent> agents = new ArrayList<>();
+        SQLiteDatabase db = null;
+
+        try {
+            String selectAllQuery = "SELECT * FROM " + TABLE_NAME;
+
+            db = this.getReadableDatabase();
+            Cursor cursor = db.rawQuery(selectAllQuery, null);
+
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    int id = cursor.getInt(0);
+                    String name = cursor.getString(1);
+                    String number = cursor.getString(2);
+                    String description = cursor.getString(3);
+
+                    // Creating new agent object and adding to list
+                    agents.add(new Agent(id, name, number, description));
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.e("DATABASE_ERROR", e.toString());
+        } finally {
+            if (db != null) {
+                db.close();
+            }
+        }
+
+        return agents;
     }
 }
